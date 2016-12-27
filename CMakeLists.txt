@@ -21,7 +21,7 @@ find_package(GLFW3 REQUIRED)
 include_directories(${GLFW3_INCLUDE_DIR})
 
 set(SRC_Headers
-    vbuffer.h
+    gl.utilities.h
     )
 
 set(SRC_Common
@@ -36,13 +36,43 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/examples
     )
 
-add_executable(VertexAndColorExample 
-    ${SRC_Common}
+add_library(common ${SRC_Common})
+
+
+
+add_executable(VertexAndColorExample
     ${SRC_Headers}
     examples/01-VertexAndColorExample/program.cpp
     )
 
 target_link_libraries(VertexAndColorExample
+    common
+    ${GLFW3_LIBRARY}
+    ${OPENGL_LIBRARIES}
+    )
+
+
+
+add_executable(VertexNormalAndTexcoordExample
+    ${SRC_Headers}
+    examples/02-VertexNormalAndTexcoordExample/program.cpp
+    )
+
+target_link_libraries(VertexNormalAndTexcoordExample
+    common
+    ${GLFW3_LIBRARY}
+    ${OPENGL_LIBRARIES}
+    )
+
+
+
+add_executable(VertexNormalTexcoordAndColorExample
+    ${SRC_Headers}
+    examples/03-VertexNormalTexcoordAndColorExample/program.cpp
+    )
+
+target_link_libraries(VertexNormalTexcoordAndColorExample
+    common
     ${GLFW3_LIBRARY}
     ${OPENGL_LIBRARIES}
     )

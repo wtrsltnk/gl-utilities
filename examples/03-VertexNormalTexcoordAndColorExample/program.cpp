@@ -1,17 +1,15 @@
 
-#include <GL/glextl.h>
-
 #include "glfw-setup.h"
+
+// First stb image so gl.utilities can use it for image loading
+#include "stb_image.h"
 #include "gl.utilities.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <iostream>
-#include <sstream>
-#include <iomanip>
 
-typedef Vertex<glm::vec3, glm::vec4> LocalVertex;
+typedef Vertex<glm::vec3, glm::vec3, glm::vec2, glm::vec4> LocalVertex;
 
 class Program : public GlfwProgram
 {
@@ -25,8 +23,9 @@ public:
 
     glm::mat4 _proj, _view;
     glm::vec3 _pos;
-    Shader<glm::vec3, glm::vec4> _shader;
-    VertexBuffer<glm::vec3, glm::vec4> _vbuffer;
+    Shader<glm::vec3, glm::vec3, glm::vec2, glm::vec4> _shader;
+    VertexBuffer<glm::vec3, glm::vec3, glm::vec2, glm::vec4> _vbuffer;
+    Texture _texture;
 };
 
 Program::Program(int width, int height)
@@ -37,17 +36,21 @@ const static std::string vshader(
         "#version 150\n"
 
         "in vec3 vertex;"
+        "in vec3 normal;"
+        "in vec2 texcoord;"
         "in vec4 color;"
 
         "uniform mat4 u_projection;"
         "uniform mat4 u_view;"
         "uniform mat4 u_model;"
 
+        "out vec2 f_texcoord;"
         "out vec4 f_color;"
 
         "void main()"
         "{"
         "    gl_Position = u_projection * u_view * u_model * vec4(vertex.xyz, 1.0);"
+        "    f_texcoord = texcoord;"
         "    f_color = color;"
         "}"
     );
@@ -55,12 +58,16 @@ const static std::string vshader(
 const static std::string fshader(
         "#version 150\n"
 
+        "uniform sampler2D u_texture;"
+
+        "in vec2 f_texcoord;"
         "in vec4 f_color;"
+
         "out vec4 color;"
 
         "void main()"
         "{"
-        "   color = f_color;"
+        "   color = f_color * texture(u_texture, f_texcoord);"
         "}"
     );
 
@@ -72,11 +79,14 @@ bool Program::SetUp()
     this->_shader.compile(vshader, fshader);
 
     this->_vbuffer
-            << LocalVertex({ { 10.0f, -10.0f, 0.0f }, { 1.0f, 1.0f, 1.0f, 1.0f } })
-            << LocalVertex({ { 10.0f, 10.0f, 0.0f }, { 1.0f, 0.0f, 1.0f, 1.0f } })
-            << LocalVertex({ { -10.0f, 10.0f, 0.0f }, { 1.0f, 1.0f, 0.0f, 1.0f } })
-            << LocalVertex({ { -10.0f, -10.0f, 0.0f }, { 0.0f, 1.0f, 1.0f, 1.0f } });
+            << LocalVertex({ { 10.0f, -10.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, { -1.0f, 0.0f }, { 1.0f, 1.0f, 1.0f, 1.0f } })
+            << LocalVertex({ { 10.0f, 10.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, { -1.0f, 1.0f }, { 1.0f, 0.0f, 1.0f, 1.0f } })
+            << LocalVertex({ { -10.0f, 10.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 1.0f }, { 1.0f, 1.0f, 0.0f, 1.0f } })
+            << LocalVertex({ { -10.0f, -10.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 0.0f }, { 0.0f, 1.0f, 1.0f, 1.0f } });
     this->_vbuffer.setup();
+
+    this->_texture.setup();
+    this->_texture.load("examples/opengl.png");
 
     return true;
 }
@@ -97,11 +107,13 @@ void Program::Render()
 {
     this->_shader.use();
     this->_shader.setupMatrices(glm::value_ptr(this->_proj), glm::value_ptr(this->_view), glm::value_ptr(glm::mat4(1.0f)));
+    this->_texture.use();
     this->_vbuffer.render();
 }
 
 void Program::CleanUp()
 {
+    this->_texture.cleanup();
     this->_vbuffer.cleanup();
 }
 

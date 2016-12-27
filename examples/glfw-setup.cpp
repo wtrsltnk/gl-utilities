@@ -7,7 +7,7 @@
 GlfwProgram* GlfwProgram::program = nullptr;
 
 GlfwProgram::GlfwProgram(int width, int height)
-    : width(width), height(height), title("GlfwWindow"), window(nullptr)
+    : width(width), height(height), title("GlfwWindow"), keepRunning(true), window(nullptr)
 {
     GlfwProgram::program = this;
 }
@@ -97,6 +97,12 @@ void GlfwProgram::ResizeCallback(GLFWwindow*, int width, int height)
 {
     if(GlfwProgram::program)
     {
+        if (width <= 0) width = 1;
+        if (height <= 0) height = 1;
+
+        GlfwProgram::program->width = width;
+        GlfwProgram::program->height = height;
+
         GlfwProgram::program->OnResize(width, height);
     }
 }
