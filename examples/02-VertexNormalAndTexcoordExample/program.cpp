@@ -30,7 +30,9 @@ public:
 
 Program::Program(int width, int height)
     : GlfwProgram (width, height), _vbuffer(_shader)
-{ }
+{
+    this->title = "Vertex, Normal and Texcoord example";
+}
 
 bool Program::SetUp()
 {

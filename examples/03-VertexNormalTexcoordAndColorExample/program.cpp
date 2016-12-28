@@ -32,7 +32,9 @@ public:
 
 Program::Program(int width, int height)
     : GlfwProgram (width, height), _vbuffer(_shader)
-{ }
+{
+    this->title = "Vertex, Normal, Texcoord and Color example";
+}
 
 const static std::string vshader(
         "#version 150\n"
