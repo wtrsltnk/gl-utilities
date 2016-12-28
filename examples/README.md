@@ -1,5 +1,5 @@
 #gl.utilities Examples#
-A few examples to showcase the different posibilities with this toolkit.
+A few boring examples to showcase shader and vertexbuffer options.
 
 ![First example](00-screenshots/01-VertexAndColorExample-shot.png)
 
