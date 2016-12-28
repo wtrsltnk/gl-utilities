@@ -56,6 +56,8 @@ target_link_libraries(VertexAndColorExample
 add_executable(VertexNormalAndTexcoordExample
     ${SRC_Headers}
     examples/02-VertexNormalAndTexcoordExample/program.cpp
+    examples/vertex.glsl
+    examples/fragment.glsl
     )
 
 target_link_libraries(VertexNormalAndTexcoordExample

@@ -30,47 +30,12 @@ Program::Program(int width, int height)
     : GlfwProgram (width, height), _vbuffer(_shader)
 { }
 
-const static std::string vshader(
-        "#version 150\n"
-
-        "in vec3 vertex;"
-        "in vec3 normal;"
-        "in vec2 texcoord;"
-
-        "uniform mat4 u_projection;"
-        "uniform mat4 u_view;"
-        "uniform mat4 u_model;"
-
-        "out vec2 f_texcoord;"
-
-        "void main()"
-        "{"
-        "    gl_Position = u_projection * u_view * u_model * vec4(vertex.xyz, 1.0);"
-        "    f_texcoord = texcoord;"
-        "}"
-    );
-
-const static std::string fshader(
-        "#version 150\n"
-
-        "uniform sampler2D u_texture;"
-
-        "in vec2 f_texcoord;"
-
-        "out vec4 color;"
-
-        "void main()"
-        "{"
-        "   color = texture(u_texture, f_texcoord);"
-        "}"
-    );
-
 bool Program::SetUp()
 {
     glEnable(GL_DEPTH_TEST);
     glClearColor((142.0f / 255.0f), (179.0f / 255.0f), (171.0f / 255.0f), 1.0f);
 
-    this->_shader.compile(vshader, fshader);
+    this->_shader.compileFromFile("examples/vertex.glsl", "examples/fragment.glsl");
 
     this->_texture.setup();
     this->_texture.load("examples/opengl.png");

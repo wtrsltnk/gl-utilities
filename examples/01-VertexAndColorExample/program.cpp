@@ -72,10 +72,10 @@ bool Program::SetUp()
     this->_shader.compile(vshader, fshader);
 
     this->_vbuffer
-            << LocalVertex({ { 10.0f, -10.0f, 0.0f }, { 1.0f, 1.0f, 1.0f, 1.0f } })
-            << LocalVertex({ { 10.0f, 10.0f, 0.0f }, { 1.0f, 0.0f, 1.0f, 1.0f } })
-            << LocalVertex({ { -10.0f, 10.0f, 0.0f }, { 1.0f, 1.0f, 0.0f, 1.0f } })
-            << LocalVertex({ { -10.0f, -10.0f, 0.0f }, { 0.0f, 1.0f, 1.0f, 1.0f } });
+            .color(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f)).vertex(glm::vec3(10.0f, -10.0f, 0.0f))
+            .color(glm::vec4(1.0f, 0.0f, 1.0f, 1.0f)).vertex(glm::vec3(10.0f, 10.0f, 0.0f))
+            .color(glm::vec4(1.0f, 1.0f, 0.0f, 1.0f)).vertex(glm::vec3(-10.0f, 10.0f, 0.0f))
+            .color(glm::vec4(0.0f, 1.0f, 1.0f, 1.0f)).vertex(glm::vec3(-10.0f, -10.0f, 0.0f));
     this->_vbuffer.setup();
 
     return true;

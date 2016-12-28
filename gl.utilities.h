@@ -5,7 +5,10 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include <fstream>
+#include <streambuf>
 
+// Vertex
 template <class...> class Vertex;
 
 template <class PositionType, class ColorType>
@@ -35,6 +38,9 @@ public:
     ColorType color;
 };
 
+
+
+// Shaders
 class CompiledShader
 {
 protected:
@@ -42,6 +48,19 @@ protected:
 public:
     CompiledShader() : _shaderId(0) { }
     virtual ~CompiledShader() { }
+
+    virtual bool compileFromFile(const std::string& vertShaderFile, const std::string& fragShaderFile)
+    {
+        std::ifstream vertShaderFileStream(vertShaderFile.c_str());
+        std::string vertShaderStr((std::istreambuf_iterator<char>(vertShaderFileStream)),
+                         std::istreambuf_iterator<char>());
+
+        std::ifstream fragShaderFileStream(fragShaderFile.c_str());
+        std::string fragShaderStr((std::istreambuf_iterator<char>(fragShaderFileStream)),
+                         std::istreambuf_iterator<char>());
+
+        return compile(vertShaderStr, fragShaderStr);
+    }
 
     virtual bool compile(const std::string& vertShaderStr, const std::string& fragShaderStr)
     {
@@ -280,33 +299,7 @@ public:
 };
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+// Vertex buffers
 class RenderableBuffer
 {
 protected:
@@ -357,6 +350,7 @@ class VertexBuffer<PositionType, ColorType> : public RenderableBuffer
 {
     const Shader<PositionType, ColorType>& _shader;
     std::vector<Vertex<PositionType, ColorType>> _verts;
+    ColorType _nextColor;
 
 public:
     VertexBuffer(const Shader<PositionType, ColorType>& shader) : _shader(shader) { }
@@ -389,14 +383,33 @@ public:
 
         return true;
     }
+
+public:
+    VertexBuffer<PositionType, ColorType>& vertex(const PositionType& position)
+    {
+        typedef Vertex<PositionType, ColorType> vertex;
+
+        this->_verts.push_back(vertex({
+                                          position,
+                                          this->_nextColor
+                                      }));
+        return *this;
+    }
+
+    VertexBuffer<PositionType, ColorType>& color(const ColorType& color)
+    {
+        this->_nextColor = color;
+        return *this;
+    }
 };
 
 template <class PositionType, class NormalType, class TexcoordType>
 class VertexBuffer<PositionType, NormalType, TexcoordType> : public RenderableBuffer
 {
-private:
     const Shader<PositionType, NormalType, TexcoordType>& _shader;
     std::vector<Vertex<PositionType, NormalType, TexcoordType>> _verts;
+    NormalType _nextNormal;
+    TexcoordType _nextTexcoord;
 
 public:
     VertexBuffer(const Shader<PositionType, NormalType, TexcoordType>& shader) : _shader(shader) { }
@@ -429,14 +442,41 @@ public:
 
         return true;
     }
+
+public:
+    VertexBuffer<PositionType, NormalType, TexcoordType>& vertex(const PositionType& position)
+    {
+        typedef Vertex<PositionType, NormalType, TexcoordType> vertex;
+
+        this->_verts.push_back(vertex({
+                                          position,
+                                          this->_nextNormal,
+                                          this->_nextTexcoord
+                                      }));
+        return *this;
+    }
+
+    VertexBuffer<PositionType, NormalType, TexcoordType>& normal(const NormalType& normal)
+    {
+        this->_nextNormal = normal;
+        return *this;
+    }
+
+    VertexBuffer<PositionType, NormalType, TexcoordType>& texcoord(const TexcoordType& texcoord)
+    {
+        this->_nextTexcoord = texcoord;
+        return *this;
+    }
 };
 
 template <class PositionType, class NormalType, class TexcoordType, class ColorType>
 class VertexBuffer<PositionType, NormalType, TexcoordType, ColorType> : public RenderableBuffer
 {
-private:
     const Shader<PositionType, NormalType, TexcoordType, ColorType>& _shader;
     std::vector<Vertex<PositionType, NormalType, TexcoordType, ColorType>> _verts;
+    NormalType _nextNormal;
+    TexcoordType _nextTexcoord;
+    ColorType _nextColor;
 
 public:
     VertexBuffer(const Shader<PositionType, NormalType, TexcoordType, ColorType>& shader) : _shader(shader) { }
@@ -469,8 +509,42 @@ public:
 
         return true;
     }
+
+public:
+    VertexBuffer<PositionType, NormalType, TexcoordType, ColorType>& vertex(const PositionType& position)
+    {
+        typedef Vertex<PositionType, NormalType, TexcoordType, ColorType> vertex;
+
+        this->_verts.push_back(vertex({
+                                          position,
+                                          this->_nextNormal,
+                                          this->_nextTexcoord,
+                                          this->_nextColor
+                                      }));
+        return *this;
+    }
+
+    VertexBuffer<PositionType, NormalType, TexcoordType, ColorType>& normal(const NormalType& normal)
+    {
+        this->_nextNormal = normal;
+        return *this;
+    }
+
+    VertexBuffer<PositionType, NormalType, TexcoordType, ColorType>& texcoord(const TexcoordType& texcoord)
+    {
+        this->_nextTexcoord = texcoord;
+        return *this;
+    }
+
+    VertexBuffer<PositionType, NormalType, TexcoordType, ColorType>& color(const ColorType& color)
+    {
+        this->_nextColor = color;
+        return *this;
+    }
 };
 
+
+// Texture
 class Texture
 {
     GLuint _textureId;
