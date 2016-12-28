@@ -21,7 +21,9 @@ find_package(GLFW3 REQUIRED)
 include_directories(${GLFW3_INCLUDE_DIR})
 
 set(SRC_Headers
-    gl.utilities.h
+    gl.utilities.shaders.h
+    gl.utilities.textures.h
+    gl.utilities.vertexbuffers.h
     )
 
 set(SRC_Common

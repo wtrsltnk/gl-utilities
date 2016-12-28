@@ -1,15 +1,12 @@
 
-#include <GL/glextl.h>
-
 #include "glfw-setup.h"
-#include "gl.utilities.h"
+
+#include "gl.utilities.shaders.h"
+#include "gl.utilities.vertexbuffers.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <iostream>
-#include <sstream>
-#include <iomanip>
 
 typedef Vertex<glm::vec3, glm::vec4> LocalVertex;
 
@@ -76,6 +73,7 @@ bool Program::SetUp()
             .color(glm::vec4(1.0f, 0.0f, 1.0f, 1.0f)).vertex(glm::vec3(10.0f, 10.0f, 0.0f))
             .color(glm::vec4(1.0f, 1.0f, 0.0f, 1.0f)).vertex(glm::vec3(-10.0f, 10.0f, 0.0f))
             .color(glm::vec4(0.0f, 1.0f, 1.0f, 1.0f)).vertex(glm::vec3(-10.0f, -10.0f, 0.0f));
+
     this->_vbuffer.setup();
 
     return true;
