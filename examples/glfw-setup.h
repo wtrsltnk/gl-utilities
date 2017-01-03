@@ -16,7 +16,7 @@ public:
 
 protected:
     virtual bool SetUp() = 0;
-    virtual void Render() = 0;
+    virtual void Render(double deltaTime) = 0;
     virtual void CleanUp() = 0;
     virtual void OnResize(int width, int height) = 0;
 

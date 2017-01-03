@@ -38,6 +38,17 @@ public:
     ColorType color;
 };
 
+template <class PositionType, class NormalType, class TexcoordType, class ColorType, class BoneType>
+class Vertex<PositionType, NormalType, TexcoordType, ColorType, BoneType>
+{
+public:
+    PositionType pos;
+    NormalType normal;
+    TexcoordType uv;
+    ColorType color;
+    BoneType bone;
+};
+
 
 // Vertex buffers
 class RenderableBuffer
@@ -279,6 +290,90 @@ public:
     VertexBuffer<PositionType, NormalType, TexcoordType, ColorType>& color(const ColorType& color)
     {
         this->_nextColor = color;
+        return *this;
+    }
+};
+
+template <class PositionType, class NormalType, class TexcoordType, class ColorType, class BoneType>
+class VertexBuffer<PositionType, NormalType, TexcoordType, ColorType, BoneType> : public RenderableBuffer
+{
+    const Shader<PositionType, NormalType, TexcoordType, ColorType, BoneType>& _shader;
+    std::vector<Vertex<PositionType, NormalType, TexcoordType, ColorType, BoneType>> _verts;
+    NormalType _nextNormal;
+    TexcoordType _nextTexcoord;
+    ColorType _nextColor;
+    BoneType _nextBone;
+
+public:
+    VertexBuffer(const Shader<PositionType, NormalType, TexcoordType, ColorType, BoneType>& shader) : _shader(shader) { }
+    virtual ~VertexBuffer() { }
+
+    VertexBuffer<PositionType, NormalType, TexcoordType, ColorType, BoneType>& operator << (const Vertex<PositionType, NormalType, TexcoordType, ColorType, BoneType>& vertex)
+    {
+        this->_verts.push_back(vertex);
+
+        return *this;
+    }
+
+    bool setup()
+    {
+        auto vertexSize = sizeof(PositionType) + sizeof(NormalType) + sizeof(TexcoordType) + sizeof(ColorType) + sizeof(BoneType);
+
+        if (!this->setupRenderableBuffer(this->_verts.size()))
+            return false;
+
+        glBindVertexArray(this->_vertexArrayId);
+        glBindBuffer(GL_ARRAY_BUFFER, this->_vertexBufferId);
+
+        glBufferData(GL_ARRAY_BUFFER, GLsizeiptr(this->_verts.size() * vertexSize), 0, GL_STATIC_DRAW);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, GLsizeiptr(this->_verts.size() * vertexSize), reinterpret_cast<const GLvoid*>(&this->_verts[0]));
+
+        this->_shader.setupAttributes();
+
+        glBindVertexArray(0);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+        this->_verts.clear();
+
+        return true;
+    }
+
+public:
+    VertexBuffer<PositionType, NormalType, TexcoordType, ColorType, BoneType>& vertex(const PositionType& position)
+    {
+        typedef Vertex<PositionType, NormalType, TexcoordType, ColorType, BoneType> vertex;
+
+        this->_verts.push_back(vertex({
+                                          position,
+                                          this->_nextNormal,
+                                          this->_nextTexcoord,
+                                          this->_nextColor,
+                                          this->_nextBone
+                                      }));
+        return *this;
+    }
+
+    VertexBuffer<PositionType, NormalType, TexcoordType, ColorType, BoneType>& normal(const NormalType& normal)
+    {
+        this->_nextNormal = normal;
+        return *this;
+    }
+
+    VertexBuffer<PositionType, NormalType, TexcoordType, ColorType, BoneType>& texcoord(const TexcoordType& texcoord)
+    {
+        this->_nextTexcoord = texcoord;
+        return *this;
+    }
+
+    VertexBuffer<PositionType, NormalType, TexcoordType, ColorType, BoneType>& color(const ColorType& color)
+    {
+        this->_nextColor = color;
+        return *this;
+    }
+
+    VertexBuffer<PositionType, NormalType, TexcoordType, ColorType>& bone(const BoneType& bone)
+    {
+        this->_nextBone = bone;
         return *this;
     }
 };

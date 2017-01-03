@@ -45,13 +45,15 @@ int GlfwProgram::Run(int argc, char* argv[])
     {
         GlfwProgram::ResizeCallback(this->window, this->width, this->height);
 
+        double time = glfwGetTime();
         while (glfwWindowShouldClose(this->window) == 0 && this->keepRunning)
         {
             glfwPollEvents();
 
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            this->Render();
+            this->Render(glfwGetTime() - time);
+            time = glfwGetTime();
 
             glfwSwapBuffers(this->window);
 

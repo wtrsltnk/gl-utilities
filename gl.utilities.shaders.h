@@ -138,6 +138,38 @@ public:
         glUniformMatrix4fv(this->_viewUniformId, 1, false, view);
         glUniformMatrix4fv(this->_modelUniformId, 1, false, model);
     }
+
+    void setupMatrices(const float projectionView[], const float model[])
+    {
+        this->use();
+
+        glUniformMatrix4fv(this->_projectionUniformId, 1, false, projectionView);
+        glUniformMatrix4fv(this->_modelUniformId, 1, false, model);
+    }
+};
+
+class TextureShader : public PVMShader
+{
+    GLuint _textureUniformId;
+public:
+    TextureShader()
+        : _textureUniformId(0), _textureUniformName("texture")
+    { }
+
+    virtual ~TextureShader() { }
+
+    std::string _textureUniformName;
+
+    virtual bool compile(const std::string& vertShaderStr, const std::string& fragShaderStr)
+    {
+        if (!PVMShader::compile(vertShaderStr, fragShaderStr))
+            return false;
+
+        this->_textureUniformId = glGetUniformLocation(this->_shaderId, this->_textureUniformName.c_str());
+        glUniform1i(this->_textureUniformId, 0);
+
+        return true;
+    }
 };
 
 template <class...> class Shader;
@@ -170,13 +202,12 @@ public:
 };
 
 template <class PositionType, class NormalType, class TexcoordType>
-class Shader<PositionType, NormalType, TexcoordType> : public PVMShader
+class Shader<PositionType, NormalType, TexcoordType> : public TextureShader
 {
     GLuint _textureUniformId;
 public:
     Shader()
-        : _vertexAttributeName("vertex"), _normalAttributeName("normal"), _texcoordAttributeName("texcoord"),
-          _textureUniformName("texture")
+        : _vertexAttributeName("vertex"), _normalAttributeName("normal"), _texcoordAttributeName("texcoord")
     { }
 
     virtual ~Shader() { }
@@ -184,7 +215,6 @@ public:
     std::string _vertexAttributeName;
     std::string _normalAttributeName;
     std::string _texcoordAttributeName;
-    std::string _textureUniformName;
 
     void setupAttributes() const
     {
@@ -202,27 +232,15 @@ public:
         glVertexAttribPointer(texcoordAttrib, sizeof(TexcoordType) / sizeof(float), GL_FLOAT, GL_FALSE, vertexSize, reinterpret_cast<const GLvoid*>(sizeof(PositionType) + sizeof(NormalType)));
         glEnableVertexAttribArray(texcoordAttrib);
     }
-
-    virtual bool compile(const std::string& vertShaderStr, const std::string& fragShaderStr)
-    {
-        if (!PVMShader::compile(vertShaderStr, fragShaderStr))
-            return false;
-
-        this->_textureUniformId = glGetUniformLocation(this->_shaderId, this->_textureUniformName.c_str());
-        glUniform1i(this->_textureUniformId, 0);
-
-        return true;
-    }
 };
 
 template <class PositionType, class NormalType, class TexcoordType, class ColorType>
-class Shader<PositionType, NormalType, TexcoordType, ColorType> : public PVMShader
+class Shader<PositionType, NormalType, TexcoordType, ColorType> : public TextureShader
 {
-    GLuint _textureUniformId;
 public:
     Shader()
-        : _vertexAttributeName("vertex"), _normalAttributeName("normal"), _texcoordAttributeName("texcoord"), _colorAttributeName("color"),
-          _textureUniformName("texture")
+        : _vertexAttributeName("vertex"), _normalAttributeName("normal"),
+          _texcoordAttributeName("texcoord"), _colorAttributeName("color")
     { }
 
     virtual ~Shader() { }
@@ -231,7 +249,6 @@ public:
     std::string _normalAttributeName;
     std::string _texcoordAttributeName;
     std::string _colorAttributeName;
-    std::string _textureUniformName;
 
     void setupAttributes() const
     {
@@ -253,16 +270,91 @@ public:
         glVertexAttribPointer(colorAttrib, sizeof(ColorType) / sizeof(float), GL_FLOAT, GL_FALSE, vertexSize, reinterpret_cast<const GLvoid*>(sizeof(PositionType) + sizeof(NormalType) + sizeof(TexcoordType)));
         glEnableVertexAttribArray(colorAttrib);
     }
+};
 
-    virtual bool compile(const std::string& vertShaderStr, const std::string& fragShaderStr)
+class SkinnedShader : public TextureShader
+{
+    GLuint _bonesUniformId;
+    GLuint _bonesBufferId;
+public:
+    SkinnedShader()
+        : _bonesUniformId(0), _bonesBufferId(0),
+          _bonesBlockUniformName("u_bones")
+    { }
+    virtual ~SkinnedShader() { }
+
+    std::string _bonesBlockUniformName;
+
+    virtual bool compile(const std::string& vertShaderStr, const std::string& fragShaderStr, int maxBoneCount)
     {
         if (!PVMShader::compile(vertShaderStr, fragShaderStr))
             return false;
 
-        this->_textureUniformId = glGetUniformLocation(this->_shaderId, this->_textureUniformName.c_str());
-        glUniform1i(this->_textureUniformId, 0);
+        this->_bonesUniformId = 0;
+        GLint uniform_block_index = glGetUniformBlockIndex(this->_shaderId, this->_bonesBlockUniformName.c_str());
+        glUniformBlockBinding(this->_shaderId, uniform_block_index, this->_bonesUniformId);
+
+        glGenBuffers(1, &this->_bonesBufferId);
+
+        glBindBuffer(GL_UNIFORM_BUFFER, this->_bonesBufferId);
+        glBufferData(GL_UNIFORM_BUFFER, maxBoneCount * sizeof(float) * 16, 0, GL_STREAM_DRAW);
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
         return true;
+    }
+
+    void setupBones(const float boneMatrices[][16], int boneCount)
+    {
+        this->use();
+
+        glBindBuffer(GL_UNIFORM_BUFFER, this->_bonesBufferId);
+        glBufferSubData(GL_UNIFORM_BUFFER, 0, boneCount * sizeof(float) * 16, boneMatrices);
+        glBindBufferRange(GL_UNIFORM_BUFFER, this->_bonesUniformId, this->_bonesBufferId, 0, boneCount * sizeof(float) * 16);
+    }
+
+};
+
+template <class PositionType, class NormalType, class TexcoordType, class ColorType, class BoneType>
+class Shader<PositionType, NormalType, TexcoordType, ColorType, BoneType> : public SkinnedShader
+{
+public:
+    Shader()
+        : _vertexAttributeName("vertex"), _normalAttributeName("normal"),
+          _texcoordAttributeName("texcoord"), _colorAttributeName("color"),
+          _boneAttributeName("bone")
+    { }
+
+    virtual ~Shader() { }
+
+    std::string _vertexAttributeName;
+    std::string _normalAttributeName;
+    std::string _texcoordAttributeName;
+    std::string _colorAttributeName;
+    std::string _boneAttributeName;
+
+    void setupAttributes() const
+    {
+        auto vertexSize = sizeof(PositionType) + sizeof(NormalType) + sizeof(TexcoordType) + sizeof(ColorType) + sizeof(BoneType);
+
+        GLuint vertexAttrib = glGetAttribLocation(this->_shaderId, this->_vertexAttributeName.c_str());
+        glVertexAttribPointer(vertexAttrib, sizeof(PositionType) / sizeof(float), GL_FLOAT, GL_FALSE, vertexSize, 0);
+        glEnableVertexAttribArray(vertexAttrib);
+
+        GLuint normalAttrib = glGetAttribLocation(this->_shaderId, this->_normalAttributeName.c_str());
+        glVertexAttribPointer(normalAttrib, sizeof(NormalType) / sizeof(float), GL_FLOAT, GL_FALSE, vertexSize, reinterpret_cast<const GLvoid*>(sizeof(PositionType)));
+        glEnableVertexAttribArray(normalAttrib);
+
+        GLuint texcoordAttrib = glGetAttribLocation(this->_shaderId, this->_texcoordAttributeName.c_str());
+        glVertexAttribPointer(texcoordAttrib, sizeof(TexcoordType) / sizeof(float), GL_FLOAT, GL_FALSE, vertexSize, reinterpret_cast<const GLvoid*>(sizeof(PositionType) + sizeof(NormalType)));
+        glEnableVertexAttribArray(texcoordAttrib);
+
+        GLuint colorAttrib = glGetAttribLocation(this->_shaderId, this->_colorAttributeName.c_str());
+        glVertexAttribPointer(colorAttrib, sizeof(ColorType) / sizeof(float), GL_FLOAT, GL_FALSE, vertexSize, reinterpret_cast<const GLvoid*>(sizeof(PositionType) + sizeof(NormalType) + sizeof(TexcoordType)));
+        glEnableVertexAttribArray(colorAttrib);
+
+        GLuint boneAttrib = glGetAttribLocation(this->_shaderId, this->_boneAttributeName.c_str());
+        glVertexAttribPointer(boneAttrib, sizeof(BoneType) / sizeof(int), GL_FLOAT, GL_FALSE, vertexSize, reinterpret_cast<const GLvoid*>(sizeof(PositionType) + sizeof(NormalType) + sizeof(TexcoordType) + sizeof(ColorType)));
+        glEnableVertexAttribArray(boneAttrib);
     }
 };
 

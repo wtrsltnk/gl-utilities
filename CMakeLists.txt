@@ -60,6 +60,7 @@ add_executable(VertexNormalAndTexcoordExample
     examples/02-VertexNormalAndTexcoordExample/program.cpp
     examples/vertex.glsl
     examples/fragment.glsl
+    examples/opengl.png
     )
 
 target_link_libraries(VertexNormalAndTexcoordExample
@@ -73,9 +74,24 @@ target_link_libraries(VertexNormalAndTexcoordExample
 add_executable(VertexNormalTexcoordAndColorExample
     ${SRC_Headers}
     examples/03-VertexNormalTexcoordAndColorExample/program.cpp
+    examples/opengl.png
     )
 
 target_link_libraries(VertexNormalTexcoordAndColorExample
+    common
+    ${GLFW3_LIBRARY}
+    ${OPENGL_LIBRARIES}
+    )
+
+
+
+add_executable(VertexNormalTexcoordColorAndBoneExample
+    ${SRC_Headers}
+    examples/04-VertexNormalTexcoordColorAndBoneExample/program.cpp
+    examples/opengl.png
+    )
+
+target_link_libraries(VertexNormalTexcoordColorAndBoneExample
     common
     ${GLFW3_LIBRARY}
     ${OPENGL_LIBRARIES}
