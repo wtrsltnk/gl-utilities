@@ -8,6 +8,8 @@
 class Texture
 {
     GLuint _textureId;
+    int _width;
+    int _height;
 public:
     Texture() : _textureId(0) { }
     virtual ~Texture() { this->cleanup(); }
@@ -38,6 +40,8 @@ public:
         auto imageData = stbi_load(filename.c_str(), &x, &y, &comp, 4);
         if (imageData != nullptr)
         {
+            this->_width = x;
+            this->_height = y;
             std::cout << "loaded " << filename << std::endl;
             auto format = comp == 4 ? GL_RGBA : GL_RGB;
             glBindTexture(GL_TEXTURE_2D, this->_textureId);
@@ -53,6 +57,9 @@ public:
         return false;
     }
 #endif // STBI_INCLUDE_STB_IMAGE_H
+
+    int width() const { return this->_width; }
+    int height() const { return this->_height; }
 };
 
 #endif // GL_UTILITIES_TEXTURES_H
