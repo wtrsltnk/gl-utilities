@@ -6,7 +6,7 @@
 #include <vector>
 #include <iostream>
 
-#include "gl.utilities.shaders.h"
+#include "gl-utilities-shaders.h"
 
 // Vertex
 template <class...> class Vertex;

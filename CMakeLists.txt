@@ -1,98 +1,70 @@
 cmake_minimum_required(VERSION 2.8)
 
-project(shadertest)
+project(gl-utilities)
 
-include(win-cpp-deps.cmake/win-cpp-deps.cmake)
+set(glext_h "${CMAKE_SOURCE_DIR}/include/GL/glext.h")
+set(glcorearb_h "${CMAKE_SOURCE_DIR}/include/GL/glcorearb.h")
 
-install_dep("https://bitbucket.org/wincppdeps/glfw.git")
-install_dep("https://bitbucket.org/wincppdeps/glm.git")
-install_dep("https://bitbucket.org/wincppdeps/glextloader.git")
+if(NOT EXISTS ${glext_h})
+    message(STATUS "Downloading glext.h")
+    file(DOWNLOAD https://www.opengl.org/registry/api/GL/glext.h ${glext_h})
+endif()
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ENABLE_CXX11} -std=c++11")
+if(NOT EXISTS ${glcorearb_h})
+    message(STATUS "Downloading glcorearb.h")
+    file(DOWNLOAD https://www.opengl.org/registry/api/GL/glcorearb.h ${glcorearb_h})
+endif()
+
+set(GL_HEADERS
+    include/GL/glext.h
+    include/GL/glcorearb.h
+    include/GL/glxext.h
+    include/GL/wglext.h
+    )
+
+add_executable(gl-utilities-extensions
+    src/program.cpp
+    src/reading.cpp
+    src/writing.cpp
+    src/glextloader.h
+    )
+
+target_include_directories(gl-utilities-extensions
+    PRIVATE ${CMAKE_SOURCE_DIR}
+    )
+
+target_compile_features(gl-utilities-extensions
+    PRIVATE cxx_auto_type
+    PRIVATE cxx_nullptr
+    PRIVATE cxx_range_for
+    )
+
+add_custom_command(TARGET gl-utilities-extensions POST_BUILD
+    COMMAND ${CMAKE_BINARY_DIR}/gl-utilities-extensions ${CMAKE_SOURCE_DIR}
+    )
 
 if(WIN32)
     find_package(OpenGL REQUIRED)
 endif()
 
-find_package(GLM REQUIRED)
-include_directories(${GLM_INCLUDE_DIR})
-
-find_package(GLFW3 REQUIRED)
-include_directories(${GLFW3_INCLUDE_DIR})
-
 set(SRC_Headers
-    gl.utilities.shaders.h
-    gl.utilities.textures.h
-    gl.utilities.vertexbuffers.h
+    include/gl-utilities-shaders.h
+    include/gl-utilities-textures.h
+    include/gl-utilities-vertexbuffers.h
     )
 
-set(SRC_Common
-    examples/glfw-setup.cpp
-    examples/glfw-setup.h
-    examples/stb_image.h
-    examples/glextl.cpp
+add_library(gl-utilities
+    src/gl-utilities.cpp
     )
 
-include_directories(
-    ${CMAKE_SOURCE_DIR}
-    ${CMAKE_SOURCE_DIR}/examples
+target_include_directories(gl-utilities
+    PRIVATE include
     )
 
-add_library(common ${SRC_Common})
-
-
-
-add_executable(VertexAndColorExample
-    ${SRC_Headers}
-    examples/01-VertexAndColorExample/program.cpp
-    )
-
-target_link_libraries(VertexAndColorExample
-    common
-    ${GLFW3_LIBRARY}
+target_link_libraries(gl-utilities
     ${OPENGL_LIBRARIES}
     )
 
-
-
-add_executable(VertexNormalAndTexcoordExample
-    ${SRC_Headers}
-    examples/02-VertexNormalAndTexcoordExample/program.cpp
-    examples/vertex.glsl
-    examples/fragment.glsl
-    examples/opengl.png
-    )
-
-target_link_libraries(VertexNormalAndTexcoordExample
-    common
-    ${GLFW3_LIBRARY}
-    ${OPENGL_LIBRARIES}
-    )
-
-
-
-add_executable(VertexNormalTexcoordAndColorExample
-    ${SRC_Headers}
-    examples/03-VertexNormalTexcoordAndColorExample/program.cpp
-    examples/opengl.png
-    )
-
-target_link_libraries(VertexNormalTexcoordAndColorExample
-    common
-    ${GLFW3_LIBRARY}
-    ${OPENGL_LIBRARIES}
-    )
-
-
-
-add_executable(VertexNormalTexcoordColorAndBoneExample
-    ${SRC_Headers}
-    examples/04-VertexNormalTexcoordColorAndBoneExample/program.cpp
-    examples/opengl.png
-    )
-
-target_link_libraries(VertexNormalTexcoordColorAndBoneExample
-    common
-    ${GLFW3_LIBRARY}
-    ${OPENGL_LIBRARIES}
+target_compile_features(gl-utilities
+    PRIVATE cxx_nullptr
     )
