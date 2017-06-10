@@ -77,6 +77,7 @@ public:
 
     void setDrawMode(GLenum mode) { this->_drawMode = mode; }
     void addFace(int start, int count) { this->_faces.insert(std::make_pair(start, count)); }
+    int vertexCount() const { return this->_vertexCount; }
 
     void render()
     {
@@ -123,6 +124,7 @@ public:
     VertexBuffer<PositionType, ColorType>& operator << (const Vertex<PositionType, ColorType>& vertex)
     {
         this->_verts.push_back(vertex);
+        this->_vertexCount = this->_verts.size();
 
         return *this;
     }
@@ -157,6 +159,7 @@ public:
                                           position,
                                           this->_nextColor
                                       }));
+        this->_vertexCount = this->_verts.size();
         return *this;
     }
 
@@ -182,6 +185,7 @@ public:
     VertexBuffer<PositionType, NormalType, TexcoordType>& operator << (const Vertex<PositionType, NormalType, TexcoordType>& vertex)
     {
         this->_verts.push_back(vertex);
+        this->_vertexCount = this->_verts.size();
 
         return *this;
     }
@@ -217,6 +221,7 @@ public:
                                           this->_nextNormal,
                                           this->_nextTexcoord
                                       }));
+        this->_vertexCount = this->_verts.size();
         return *this;
     }
 
@@ -249,6 +254,7 @@ public:
     VertexBuffer<PositionType, NormalType, TexcoordType, ColorType>& operator << (const Vertex<PositionType, NormalType, TexcoordType, ColorType>& vertex)
     {
         this->_verts.push_back(vertex);
+        this->_vertexCount = this->_verts.size();
 
         return *this;
     }
@@ -285,6 +291,7 @@ public:
                                           this->_nextTexcoord,
                                           this->_nextColor
                                       }));
+        this->_vertexCount = this->_verts.size();
         return *this;
     }
 
@@ -324,6 +331,7 @@ public:
     VertexBuffer<PositionType, NormalType, TexcoordType, ColorType, BoneType>& operator << (const Vertex<PositionType, NormalType, TexcoordType, ColorType, BoneType>& vertex)
     {
         this->_verts.push_back(vertex);
+        this->_vertexCount = this->_verts.size();
 
         return *this;
     }
@@ -363,6 +371,7 @@ public:
                                           this->_nextColor,
                                           this->_nextBone
                                       }));
+        this->_vertexCount = this->_verts.size();
         return *this;
     }
 
