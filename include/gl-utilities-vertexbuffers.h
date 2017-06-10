@@ -4,6 +4,7 @@
 #include <GL/glextl.h>
 #include <string>
 #include <vector>
+#include <map>
 #include <iostream>
 
 #include "gl-utilities-shaders.h"
@@ -57,6 +58,8 @@ protected:
     unsigned int _vertexArrayId;
     unsigned int _vertexBufferId;
     int _vertexCount;
+    GLenum _drawMode;
+    std::map<int, int> _faces;
 
     bool setupRenderableBuffer(int vertexCount)
     {
@@ -69,13 +72,23 @@ protected:
     }
 
 public:
-    RenderableBuffer() : _vertexArrayId(0), _vertexBufferId(0), _vertexCount(0) { }
+    RenderableBuffer() : _vertexArrayId(0), _vertexBufferId(0), _vertexCount(0), _drawMode(GL_QUADS) { }
     virtual ~RenderableBuffer() { }
+
+    void setDrawMode(GLenum mode) { this->_drawMode = mode; }
+    void addFace(int start, int count) { this->_faces.insert(std::make_pair(start, count)); }
 
     void render()
     {
         glBindVertexArray(this->_vertexArrayId);
-        glDrawArrays(GL_QUADS, 0, this->_vertexCount);
+        if (this->_faces.empty())
+        {
+            glDrawArrays(this->_drawMode, 0, this->_vertexCount);
+        }
+        else
+        {
+            for (auto pair : this->_faces) glDrawArrays(this->_drawMode, pair.first, pair.second);
+        }
         glBindVertexArray(0);
     }
 
