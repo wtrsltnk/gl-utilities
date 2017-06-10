@@ -121,6 +121,8 @@ public:
     VertexBuffer(const Shader<PositionType, ColorType>& shader) : _shader(shader) { }
     virtual ~VertexBuffer() { }
 
+    std::vector<Vertex<PositionType, ColorType>>& verts() { return this->_verts; }
+
     VertexBuffer<PositionType, ColorType>& operator << (const Vertex<PositionType, ColorType>& vertex)
     {
         this->_verts.push_back(vertex);
@@ -181,6 +183,8 @@ class VertexBuffer<PositionType, NormalType, TexcoordType> : public RenderableBu
 public:
     VertexBuffer(const Shader<PositionType, NormalType, TexcoordType>& shader) : _shader(shader) { }
     virtual ~VertexBuffer() { }
+
+    std::vector<Vertex<PositionType, NormalType, TexcoordType>>& verts() { return this->_verts; }
 
     VertexBuffer<PositionType, NormalType, TexcoordType>& operator << (const Vertex<PositionType, NormalType, TexcoordType>& vertex)
     {
@@ -250,6 +254,8 @@ class VertexBuffer<PositionType, NormalType, TexcoordType, ColorType> : public R
 public:
     VertexBuffer(const Shader<PositionType, NormalType, TexcoordType, ColorType>& shader) : _shader(shader) { }
     virtual ~VertexBuffer() { }
+
+    std::vector<Vertex<PositionType, NormalType, TexcoordType, ColorType>>& verts() { return this->_verts; }
 
     VertexBuffer<PositionType, NormalType, TexcoordType, ColorType>& operator << (const Vertex<PositionType, NormalType, TexcoordType, ColorType>& vertex)
     {
@@ -327,6 +333,8 @@ class VertexBuffer<PositionType, NormalType, TexcoordType, ColorType, BoneType> 
 public:
     VertexBuffer(const Shader<PositionType, NormalType, TexcoordType, ColorType, BoneType>& shader) : _shader(shader) { }
     virtual ~VertexBuffer() { }
+
+    std::vector<Vertex<PositionType, NormalType, TexcoordType, ColorType, BoneType>>& verts() { return this->_verts; }
 
     VertexBuffer<PositionType, NormalType, TexcoordType, ColorType, BoneType>& operator << (const Vertex<PositionType, NormalType, TexcoordType, ColorType, BoneType>& vertex)
     {

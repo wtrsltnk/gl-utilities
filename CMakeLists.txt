@@ -40,7 +40,7 @@ target_compile_features(gl-utilities-extensions
     )
 
 add_custom_command(TARGET gl-utilities-extensions POST_BUILD
-    COMMAND ${CMAKE_BINARY_DIR}/gl-utilities-extensions ${CMAKE_SOURCE_DIR}
+    COMMAND ${CMAKE_CURRENT_BINARY_DIR}/gl-utilities-extensions ${CMAKE_CURRENT_SOURCE_DIR}
     )
 
 if(WIN32)
@@ -55,6 +55,7 @@ set(SRC_Headers
 
 add_library(gl-utilities
     src/gl-utilities.cpp
+    ${SRC_Headers}
     )
 
 target_include_directories(gl-utilities
