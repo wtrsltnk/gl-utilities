@@ -17,6 +17,8 @@ public:
     CompiledShader() : _shaderId(0) { }
     virtual ~CompiledShader() { }
 
+    GLuint id() const { return this->_shaderId; }
+
     virtual bool compileFromFile(const std::string& vertShaderFile, const std::string& fragShaderFile)
     {
         std::ifstream vertShaderFileStream(vertShaderFile.c_str());
