@@ -91,6 +91,7 @@ public:
             for (auto pair : this->_faces) glDrawArrays(this->_drawMode, pair.first, pair.second);
         }
         glBindVertexArray(0);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
 
     void cleanup()
