@@ -1,7 +1,15 @@
 #ifndef GL_UTILITIES_TEXTURES_H
 #define GL_UTILITIES_TEXTURES_H
 
+#ifdef _WIN32
 #include <GL/glextl.h>
+#endif // _WIN32
+
+#ifdef __ANDROID__
+#include <GLES/gl.h>
+#include <GLES3/gl3.h>
+#endif // __ANDROID__
+
 #include <string>
 #include <iostream>
 
