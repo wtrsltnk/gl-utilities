@@ -80,7 +80,7 @@ protected:
     }
 
 public:
-    RenderableBuffer() : _vertexArrayId(0), _vertexBufferId(0), _vertexCount(0), _drawMode(GL_QUADS) { }
+    RenderableBuffer() : _vertexArrayId(0), _vertexBufferId(0), _vertexCount(0), _drawMode(GL_TRIANGLES) { }
     virtual ~RenderableBuffer() { }
 
     void setDrawMode(GLenum mode) { this->_drawMode = mode; }

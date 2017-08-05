@@ -2,6 +2,7 @@
 #define GL_UTILITIES_LOADERS_H
 
 #include "gl-utilities-textures.h"
+#include <cstdlib>
 
 class TextureLoader
 {
