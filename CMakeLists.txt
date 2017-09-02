@@ -48,6 +48,7 @@ if(WIN32)
 endif()
 
 set(SRC_Headers
+    include/gl-utilities-loaders.h
     include/gl-utilities-shaders.h
     include/gl-utilities-textures.h
     include/gl-utilities-vertexbuffers.h

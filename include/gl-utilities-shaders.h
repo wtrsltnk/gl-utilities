@@ -20,8 +20,8 @@
 class CompiledShader
 {
 protected:
-    GLuint _shaderId;
 public:
+    GLuint _shaderId;
     CompiledShader() : _shaderId(0) { }
     virtual ~CompiledShader() { }
 
@@ -113,11 +113,11 @@ public:
 // Shaders with Projection, View and Model uniforms
 class PVMShader : public CompiledShader
 {
+public:
     GLuint _projectionUniformId;
     GLuint _viewUniformId;
     GLuint _modelUniformId;
 
-public:
     PVMShader()
         : CompiledShader(), _projectionUniformId(0), _viewUniformId(0), _modelUniformId(0),
           _projectionUniformName("u_projection"), _viewUniformName("u_view"), _modelUniformName("u_model")
@@ -160,8 +160,8 @@ public:
 
 class TextureShader : public PVMShader
 {
-    GLuint _textureUniformId;
 public:
+    GLuint _textureUniformId;
     TextureShader()
         : _textureUniformId(0), _textureUniformName("texture")
     { }
@@ -214,8 +214,8 @@ public:
 template <class PositionType, class NormalType, class TexcoordType>
 class Shader<PositionType, NormalType, TexcoordType> : public TextureShader
 {
-    GLuint _textureUniformId;
 public:
+    GLuint _textureUniformId;
     Shader()
         : _vertexAttributeName("vertex"), _normalAttributeName("normal"), _texcoordAttributeName("texcoord")
     { }

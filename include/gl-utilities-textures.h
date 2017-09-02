@@ -21,11 +21,12 @@ class Texture
     int _height;
 public:
     Texture() : _textureId(0) { }
+    Texture(GLuint id) : _textureId(id) { }
     virtual ~Texture() { this->cleanup(); }
 
     void setup()
     {
-        glGenTextures(1, &this->_textureId);
+        glGenTextures(1, &_textureId);
     }
 
     void use() const
@@ -37,11 +38,13 @@ public:
     {
         if (this->_textureId != 0)
         {
+            glEnable(GL_TEXTURE_2D);
             glDeleteTextures(1, &this->_textureId);
             this->_textureId = 0;
         }
     }
     
+    void setSize(int w, int h) { this->_width = w; this->_height = h; }
     int width() const { return this->_width; }
     int height() const { return this->_height; }
 };

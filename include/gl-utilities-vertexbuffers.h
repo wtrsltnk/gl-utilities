@@ -63,6 +63,7 @@ public:
 class RenderableBuffer
 {
 protected:
+public:
     unsigned int _vertexArrayId;
     unsigned int _vertexBufferId;
     int _vertexCount;
@@ -79,7 +80,6 @@ protected:
         return true;
     }
 
-public:
     RenderableBuffer() : _vertexArrayId(0), _vertexBufferId(0), _vertexCount(0), _drawMode(GL_TRIANGLES) { }
     virtual ~RenderableBuffer() { }
 
@@ -184,12 +184,12 @@ public:
 template <class PositionType, class NormalType, class TexcoordType>
 class VertexBuffer<PositionType, NormalType, TexcoordType> : public RenderableBuffer
 {
+public:
     const Shader<PositionType, NormalType, TexcoordType>& _shader;
     std::vector<Vertex<PositionType, NormalType, TexcoordType>> _verts;
     NormalType _nextNormal;
     TexcoordType _nextTexcoord;
 
-public:
     VertexBuffer(const Shader<PositionType, NormalType, TexcoordType>& shader) : _shader(shader) { }
     virtual ~VertexBuffer() { }
 
@@ -254,13 +254,13 @@ public:
 template <class PositionType, class NormalType, class TexcoordType, class ColorType>
 class VertexBuffer<PositionType, NormalType, TexcoordType, ColorType> : public RenderableBuffer
 {
+public:
     const Shader<PositionType, NormalType, TexcoordType, ColorType>& _shader;
     std::vector<Vertex<PositionType, NormalType, TexcoordType, ColorType>> _verts;
     NormalType _nextNormal;
     TexcoordType _nextTexcoord;
     ColorType _nextColor;
 
-public:
     VertexBuffer(const Shader<PositionType, NormalType, TexcoordType, ColorType>& shader) : _shader(shader) { }
     virtual ~VertexBuffer() { }
 
