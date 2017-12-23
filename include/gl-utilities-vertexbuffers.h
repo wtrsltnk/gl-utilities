@@ -2,7 +2,8 @@
 #define GL_UTILITIES_VERTEXBUFFERS_H
 
 #ifdef _WIN32
-#include <GL/glextl.h>
+#define GL_GLEXT_PROTOTYPES
+#include <GL/glext.h>
 #endif // _WIN32
 
 #ifdef __ANDROID__
@@ -76,16 +77,6 @@ public:
     GLenum _drawMode;
     std::map<int, int> _faces;
 
-    bool setupRenderableBuffer(int vertexCount)
-    {
-        this->_vertexCount = vertexCount;
-
-        glGenVertexArrays(1, &this->_vertexArrayId);
-        glGenBuffers(1, &this->_vertexBufferId);
-
-        return true;
-    }
-
     RenderableBuffer() : _vertexArrayId(0), _vertexBufferId(0), _vertexCount(0), _drawMode(GL_TRIANGLES) { }
     virtual ~RenderableBuffer() { }
 
@@ -105,8 +96,16 @@ public:
 
     bool setup()
     {
-        if (!this->setupRenderableBuffer(this->_verts.size()))
-            return false;
+        return setup(_drawMode);
+    }
+
+    bool setup(GLenum mode)
+    {
+        _drawMode = mode;
+        _vertexCount = _verts.size();
+
+        glGenVertexArrays(1, &this->_vertexArrayId);
+        glGenBuffers(1, &this->_vertexBufferId);
 
         glBindVertexArray(this->_vertexArrayId);
         glBindBuffer(GL_ARRAY_BUFFER, this->_vertexBufferId);
