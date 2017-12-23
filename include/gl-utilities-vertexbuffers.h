@@ -2,7 +2,6 @@
 #define GL_UTILITIES_VERTEXBUFFERS_H
 
 #ifdef _WIN32
-#define GL_GLEXT_PROTOTYPES
 #include <GL/glext.h>
 #endif // _WIN32
 
