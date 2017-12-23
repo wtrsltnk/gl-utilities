@@ -2,7 +2,8 @@
 #define GL_UTILITIES_SHADERS_H
 
 #ifdef _WIN32
-#include <GL/glextl.h>
+#define GL_GLEXT_PROTOTYPES
+#include <GL/glext.h>
 #endif // _WIN32
 
 #ifdef __ANDROID__
