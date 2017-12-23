@@ -2,7 +2,7 @@
 #define GL_UTILITIES_VERTEXBUFFERS_H
 
 #ifdef _WIN32
-#include <GL/glext.h>
+#include <GL/glextl.h>
 #endif // _WIN32
 
 #ifdef __ANDROID__
