@@ -60,9 +60,15 @@ public:
 
 
 // Vertex buffers
+template <class ShaderType, class VertexType>
 class RenderableBuffer
 {
 protected:
+    const ShaderType& _shader;
+    std::vector<VertexType> _verts;
+
+    RenderableBuffer(const ShaderType& shader) : _shader(shader) { }
+
 public:
     unsigned int _vertexArrayId;
     unsigned int _vertexBufferId;
@@ -83,9 +89,40 @@ public:
     RenderableBuffer() : _vertexArrayId(0), _vertexBufferId(0), _vertexCount(0), _drawMode(GL_TRIANGLES) { }
     virtual ~RenderableBuffer() { }
 
+    std::vector<VertexType>& verts() { return this->_verts; }
+
+    RenderableBuffer<ShaderType, VertexType>& operator << (const VertexType& vertex)
+    {
+        this->_verts.push_back(vertex);
+        this->_vertexCount = this->_verts.size();
+
+        return *this;
+    }
+
     void setDrawMode(GLenum mode) { this->_drawMode = mode; }
     void addFace(int start, int count) { this->_faces.insert(std::make_pair(start, count)); }
     int vertexCount() const { return this->_vertexCount; }
+
+    bool setup()
+    {
+        if (!this->setupRenderableBuffer(this->_verts.size()))
+            return false;
+
+        glBindVertexArray(this->_vertexArrayId);
+        glBindBuffer(GL_ARRAY_BUFFER, this->_vertexBufferId);
+
+        glBufferData(GL_ARRAY_BUFFER, GLsizeiptr(this->_verts.size() * sizeof(VertexType)), 0, GL_STATIC_DRAW);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, GLsizeiptr(this->_verts.size() * sizeof(VertexType)), reinterpret_cast<const GLvoid*>(&this->_verts[0]));
+
+        this->_shader.setupAttributes();
+
+        glBindVertexArray(0);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+        this->_verts.clear();
+
+        return true;
+    }
 
     void render()
     {
@@ -120,46 +157,17 @@ public:
 template <class...> class VertexBuffer;
 
 template <class PositionType, class ColorType>
-class VertexBuffer<PositionType, ColorType> : public RenderableBuffer
+class VertexBuffer<PositionType, ColorType>
+        : public RenderableBuffer<Shader<PositionType, ColorType>, Vertex<PositionType, ColorType>>
 {
-    const Shader<PositionType, ColorType>& _shader;
-    std::vector<Vertex<PositionType, ColorType>> _verts;
     ColorType _nextColor;
 
 public:
-    VertexBuffer(const Shader<PositionType, ColorType>& shader) : _shader(shader) { }
+    VertexBuffer(const Shader<PositionType, ColorType>& shader)
+        : RenderableBuffer<Shader<PositionType, ColorType>, Vertex<PositionType, ColorType>>(shader)
+    { }
+
     virtual ~VertexBuffer() { }
-
-    std::vector<Vertex<PositionType, ColorType>>& verts() { return this->_verts; }
-
-    VertexBuffer<PositionType, ColorType>& operator << (const Vertex<PositionType, ColorType>& vertex)
-    {
-        this->_verts.push_back(vertex);
-        this->_vertexCount = this->_verts.size();
-
-        return *this;
-    }
-
-    bool setup()
-    {
-        if (!this->setupRenderableBuffer(this->_verts.size()))
-            return false;
-
-        glBindVertexArray(this->_vertexArrayId);
-        glBindBuffer(GL_ARRAY_BUFFER, this->_vertexBufferId);
-
-        glBufferData(GL_ARRAY_BUFFER, GLsizeiptr(this->_verts.size() * sizeof(Vertex<PositionType, ColorType>)), 0, GL_STATIC_DRAW);
-        glBufferSubData(GL_ARRAY_BUFFER, 0, GLsizeiptr(this->_verts.size() * sizeof(Vertex<PositionType, ColorType>)), reinterpret_cast<const GLvoid*>(&this->_verts[0]));
-
-        this->_shader.setupAttributes();
-
-        glBindVertexArray(0);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-        this->_verts.clear();
-
-        return true;
-    }
 
 public:
     VertexBuffer<PositionType, ColorType>& vertex(const PositionType& position)
@@ -182,47 +190,18 @@ public:
 };
 
 template <class PositionType, class NormalType, class TexcoordType>
-class VertexBuffer<PositionType, NormalType, TexcoordType> : public RenderableBuffer
+class VertexBuffer<PositionType, NormalType, TexcoordType>
+        : public RenderableBuffer<Shader<PositionType, NormalType, TexcoordType>, Vertex<PositionType, NormalType, TexcoordType>>
 {
 public:
-    const Shader<PositionType, NormalType, TexcoordType>& _shader;
-    std::vector<Vertex<PositionType, NormalType, TexcoordType>> _verts;
     NormalType _nextNormal;
     TexcoordType _nextTexcoord;
 
-    VertexBuffer(const Shader<PositionType, NormalType, TexcoordType>& shader) : _shader(shader) { }
+    VertexBuffer(const Shader<PositionType, NormalType, TexcoordType>& shader)
+        : RenderableBuffer<Shader<PositionType, NormalType, TexcoordType>, Vertex<PositionType, NormalType, TexcoordType>>(shader)
+    { }
+
     virtual ~VertexBuffer() { }
-
-    std::vector<Vertex<PositionType, NormalType, TexcoordType>>& verts() { return this->_verts; }
-
-    VertexBuffer<PositionType, NormalType, TexcoordType>& operator << (const Vertex<PositionType, NormalType, TexcoordType>& vertex)
-    {
-        this->_verts.push_back(vertex);
-        this->_vertexCount = this->_verts.size();
-
-        return *this;
-    }
-
-    bool setup()
-    {
-        if (!this->setupRenderableBuffer(this->_verts.size()))
-            return false;
-
-        glBindVertexArray(this->_vertexArrayId);
-        glBindBuffer(GL_ARRAY_BUFFER, this->_vertexBufferId);
-
-        glBufferData(GL_ARRAY_BUFFER, GLsizeiptr(this->_verts.size() * sizeof(Vertex<PositionType, NormalType, TexcoordType>)), 0, GL_STATIC_DRAW);
-        glBufferSubData(GL_ARRAY_BUFFER, 0, GLsizeiptr(this->_verts.size() * sizeof(Vertex<PositionType, NormalType, TexcoordType>)), reinterpret_cast<const GLvoid*>(&this->_verts[0]));
-
-        this->_shader.setupAttributes();
-
-        glBindVertexArray(0);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-        this->_verts.clear();
-
-        return true;
-    }
 
 public:
     VertexBuffer<PositionType, NormalType, TexcoordType>& vertex(const PositionType& position)
@@ -252,48 +231,19 @@ public:
 };
 
 template <class PositionType, class NormalType, class TexcoordType, class ColorType>
-class VertexBuffer<PositionType, NormalType, TexcoordType, ColorType> : public RenderableBuffer
+class VertexBuffer<PositionType, NormalType, TexcoordType, ColorType>
+        : public RenderableBuffer<Shader<PositionType, NormalType, TexcoordType, ColorType>, Vertex<PositionType, NormalType, TexcoordType, ColorType>>
 {
 public:
-    const Shader<PositionType, NormalType, TexcoordType, ColorType>& _shader;
-    std::vector<Vertex<PositionType, NormalType, TexcoordType, ColorType>> _verts;
     NormalType _nextNormal;
     TexcoordType _nextTexcoord;
     ColorType _nextColor;
 
-    VertexBuffer(const Shader<PositionType, NormalType, TexcoordType, ColorType>& shader) : _shader(shader) { }
+    VertexBuffer(const Shader<PositionType, NormalType, TexcoordType, ColorType>& shader)
+        : RenderableBuffer<Shader<PositionType, NormalType, TexcoordType, ColorType>, Vertex<PositionType, NormalType, TexcoordType, ColorType>>(shader)
+    { }
+
     virtual ~VertexBuffer() { }
-
-    std::vector<Vertex<PositionType, NormalType, TexcoordType, ColorType>>& verts() { return this->_verts; }
-
-    VertexBuffer<PositionType, NormalType, TexcoordType, ColorType>& operator << (const Vertex<PositionType, NormalType, TexcoordType, ColorType>& vertex)
-    {
-        this->_verts.push_back(vertex);
-        this->_vertexCount = this->_verts.size();
-
-        return *this;
-    }
-
-    bool setup()
-    {
-        if (!this->setupRenderableBuffer(this->_verts.size()))
-            return false;
-
-        glBindVertexArray(this->_vertexArrayId);
-        glBindBuffer(GL_ARRAY_BUFFER, this->_vertexBufferId);
-
-        glBufferData(GL_ARRAY_BUFFER, GLsizeiptr(this->_verts.size() * sizeof(Vertex<PositionType, NormalType, TexcoordType, ColorType>)), 0, GL_STATIC_DRAW);
-        glBufferSubData(GL_ARRAY_BUFFER, 0, GLsizeiptr(this->_verts.size() * sizeof(Vertex<PositionType, NormalType, TexcoordType, ColorType>)), reinterpret_cast<const GLvoid*>(&this->_verts[0]));
-
-        this->_shader.setupAttributes();
-
-        glBindVertexArray(0);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-        this->_verts.clear();
-
-        return true;
-    }
 
 public:
     VertexBuffer<PositionType, NormalType, TexcoordType, ColorType>& vertex(const PositionType& position)
@@ -330,51 +280,20 @@ public:
 };
 
 template <class PositionType, class NormalType, class TexcoordType, class ColorType, class BoneType>
-class VertexBuffer<PositionType, NormalType, TexcoordType, ColorType, BoneType> : public RenderableBuffer
+class VertexBuffer<PositionType, NormalType, TexcoordType, ColorType, BoneType>
+        : public RenderableBuffer<Shader<PositionType, NormalType, TexcoordType, ColorType, BoneType>, Vertex<PositionType, NormalType, TexcoordType, ColorType, BoneType>>
 {
-    const Shader<PositionType, NormalType, TexcoordType, ColorType, BoneType>& _shader;
-    std::vector<Vertex<PositionType, NormalType, TexcoordType, ColorType, BoneType>> _verts;
     NormalType _nextNormal;
     TexcoordType _nextTexcoord;
     ColorType _nextColor;
     BoneType _nextBone;
 
 public:
-    VertexBuffer(const Shader<PositionType, NormalType, TexcoordType, ColorType, BoneType>& shader) : _shader(shader) { }
+    VertexBuffer(const Shader<PositionType, NormalType, TexcoordType, ColorType, BoneType>& shader)
+        : RenderableBuffer<Shader<PositionType, NormalType, TexcoordType, ColorType, BoneType>, Vertex<PositionType, NormalType, TexcoordType, ColorType, BoneType>>(shader)
+    { }
+
     virtual ~VertexBuffer() { }
-
-    std::vector<Vertex<PositionType, NormalType, TexcoordType, ColorType, BoneType>>& verts() { return this->_verts; }
-
-    VertexBuffer<PositionType, NormalType, TexcoordType, ColorType, BoneType>& operator << (const Vertex<PositionType, NormalType, TexcoordType, ColorType, BoneType>& vertex)
-    {
-        this->_verts.push_back(vertex);
-        this->_vertexCount = this->_verts.size();
-
-        return *this;
-    }
-
-    bool setup()
-    {
-        auto vertexSize = sizeof(PositionType) + sizeof(NormalType) + sizeof(TexcoordType) + sizeof(ColorType) + sizeof(BoneType);
-
-        if (!this->setupRenderableBuffer(this->_verts.size()))
-            return false;
-
-        glBindVertexArray(this->_vertexArrayId);
-        glBindBuffer(GL_ARRAY_BUFFER, this->_vertexBufferId);
-
-        glBufferData(GL_ARRAY_BUFFER, GLsizeiptr(this->_verts.size() * vertexSize), 0, GL_STATIC_DRAW);
-        glBufferSubData(GL_ARRAY_BUFFER, 0, GLsizeiptr(this->_verts.size() * vertexSize), reinterpret_cast<const GLvoid*>(&this->_verts[0]));
-
-        this->_shader.setupAttributes();
-
-        glBindVertexArray(0);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-        this->_verts.clear();
-
-        return true;
-    }
 
 public:
     VertexBuffer<PositionType, NormalType, TexcoordType, ColorType, BoneType>& vertex(const PositionType& position)
